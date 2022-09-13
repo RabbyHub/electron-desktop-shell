@@ -1,5 +1,5 @@
 {
-  "name": "electron-chrome-extensions",
+  "name": "@rabby-wallet/electron-chrome-extensions",
   "version": "3.9.0",
   "description": "Chrome extension support for Electron",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "chrome",
     "extensions"
   ],
-  "repository": "https://github.com/samuelmaddock/electron-browser-shell",
+  "repository": "https://github.com/RabbyHub/electron-desktop-shell",
   "author": "Samuel Maddock <sam@samuelmaddock.com>",
   "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
