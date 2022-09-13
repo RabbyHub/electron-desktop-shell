@@ -106,9 +106,8 @@ export class WindowsAPI {
   }
 
   // not same with `getLastFocused`, `getCurrent` means the host window where javascript executing
-  private getCurrent(event: ExtensionEvent) {
-    const wc = event.sender;
-    const win = this.ctx.store.tabToWindow.get(wc) || BrowserWindow.fromWebContents(wc)
+  private async getCurrent(event: ExtensionEvent) {
+    const win = await this.ctx.store.windowsGetCurrent(event);
 
     return win ? this.getWindowDetails(win) : null
   }

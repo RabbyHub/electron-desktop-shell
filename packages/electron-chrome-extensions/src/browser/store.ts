@@ -55,6 +55,20 @@ export class ExtensionStore extends EventEmitter {
     this.emit('window-added', window)
   }
 
+  async windowsGetCurrent(event: ExtensionEvent) {
+    const wc = event.sender;
+    let win = this.tabToWindow.get(wc) || BrowserWindow.fromWebContents(wc);
+    if (typeof this.impl.windowsGetCurrent === 'function') {
+      const lastFocusedWindow = this.getLastFocusedWindow() || null;
+      win = await this.impl.windowsGetCurrent(win, {
+        event,
+        lastFocusedWindow
+      });
+    }
+
+    return win;
+  }
+
   async createWindow(event: ExtensionEvent, details: chrome.windows.CreateData) {
     if (typeof this.impl.createWindow !== 'function') {
       throw new Error('createWindow is not implemented')
