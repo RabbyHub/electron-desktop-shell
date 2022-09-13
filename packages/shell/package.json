@@ -1,0 +1,25 @@
+{
+  "name": "@rabby-wallet/shell",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Minimum Viable Browser shell built on Electron.",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "electron .",
+    "test": "npm run build"
+  },
+  "license": "GPL-3.0",
+  "author": "Samuel Maddock <sam@samuelmaddock.com>",
+  "dependencies": {
+    "@rabby-wallet/electron-chrome-context-menu": "^1.0.1",
+    "@rabby-wallet/electron-chrome-extensions": "^3.4.0",
+    "electron": "15.0.0-beta.2"
+  },
+  "devDependencies": {
+    "babel-loader": "^8.1.0",
+    "cross-env": "^7.0.2",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  }
+}

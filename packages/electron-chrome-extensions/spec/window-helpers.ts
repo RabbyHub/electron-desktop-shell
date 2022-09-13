@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { expect } from 'chai'
-import { BrowserWindow } from 'electron/main'
+import { BrowserWindow } from 'electron'
 import { emittedOnce } from './events-helpers'
 
 async function ensureWindowIsClosed(window: BrowserWindow | null) {

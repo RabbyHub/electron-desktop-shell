@@ -1,6 +1,7 @@
 import { BrowserWindow } from 'electron'
 import { ExtensionContext } from '../context'
 import { ExtensionEvent } from '../router'
+import { parse } from 'node:url'
 
 const debug = require('debug')('electron-chrome-extensions:windows')
 
@@ -11,6 +12,11 @@ const getWindowState = (win: BrowserWindow): chrome.windows.Window['state'] => {
   return 'normal'
 }
 
+function ensureSuffix (url: string = '', suffix: string = '/') {
+  if (url.endsWith(suffix)) return url
+  return url + suffix
+}
+
 export class WindowsAPI {
   static WINDOW_ID_NONE = -1
   static WINDOW_ID_CURRENT = -2
@@ -19,7 +25,6 @@ export class WindowsAPI {
     const handle = this.ctx.router.apiHandler()
     handle('windows.get', this.get.bind(this))
     handle('windows.getCurrent', this.getCurrent.bind(this))
-    // TODO: how does getCurrent differ from getLastFocused?
     handle('windows.getLastFocused', this.getLastFocused.bind(this))
     handle('windows.getAll', this.getAll.bind(this))
     handle('windows.create', this.create.bind(this))
@@ -83,7 +88,7 @@ export class WindowsAPI {
 
   private getWindowFromId(id: number) {
     if (id === WindowsAPI.WINDOW_ID_CURRENT) {
-      return this.ctx.store.getCurrentWindow()
+      return this.ctx.store.getLastFocusedWindow()
     } else {
       return this.ctx.store.getWindowById(id)
     }
@@ -100,8 +105,11 @@ export class WindowsAPI {
     return win ? this.getWindowDetails(win) : null
   }
 
+  // not same with `getLastFocused`, `getCurrent` means the host window where javascript executing
   private getCurrent(event: ExtensionEvent) {
-    const win = this.ctx.store.getCurrentWindow()
+    const wc = event.sender;
+    const win = this.ctx.store.tabToWindow.get(wc) || BrowserWindow.fromWebContents(wc)
+
     return win ? this.getWindowDetails(win) : null
   }
 
@@ -110,7 +118,19 @@ export class WindowsAPI {
   }
 
   private async create(event: ExtensionEvent, details: chrome.windows.CreateData) {
-    const win = await this.ctx.store.createWindow(event, details)
+    const baseURL = ensureSuffix(event.extension.url, '/');
+
+    let url = Array.isArray(details.url) ? details.url[0] : details.url || ''
+
+    const urlInfo = parse(url);
+
+    if (!urlInfo.protocol && !urlInfo.hostname) {
+      url = `${baseURL}${url}`;
+    } else if (!urlInfo.hostname) {
+      url = `${baseURL}${url}`;
+    }
+    
+    const win = await this.ctx.store.createWindow(event, {...details, url})
     return this.getWindowDetails(win)
   }
 
