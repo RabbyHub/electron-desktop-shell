@@ -18,6 +18,9 @@
   "repository": "https://github.com/RabbyHub/electron-desktop-shell",
   "author": "Samuel Maddock <sam@samuelmaddock.com>",
   "license": "SEE LICENSE IN LICENSE.md",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "debug": "^4.3.1"
   },
