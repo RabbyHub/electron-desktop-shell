@@ -19,18 +19,18 @@ jobs:
     - name: Setup Node
       uses: actions/setup-node@v1
       with:
-        node-version: '12.x'
+        node-version: '16.x'
 
     - name: Install dependencies
       run: |
-        yarn install
+        npm run boot
 
     - name: Build
       run: |
-        yarn build
+        npm run build
 
     - name: Run tests
       uses: GabrielBB/xvfb-action@v1
       with:
         run: |
-          yarn test
+          npm run test
