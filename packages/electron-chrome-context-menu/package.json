@@ -19,6 +19,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "electron": ">=9.0.0"
   },
