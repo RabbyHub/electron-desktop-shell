@@ -18,8 +18,8 @@ export class WindowsAPI {
   constructor(private ctx: ExtensionContext) {
     const handle = this.ctx.router.apiHandler()
     handle('windows.get', this.get.bind(this))
+    handle('windows.getCurrent', this.getCurrent.bind(this))
     // TODO: how does getCurrent differ from getLastFocused?
-    handle('windows.getCurrent', this.getLastFocused.bind(this))
     handle('windows.getLastFocused', this.getLastFocused.bind(this))
     handle('windows.getAll', this.getAll.bind(this))
     handle('windows.create', this.create.bind(this))
@@ -97,6 +97,11 @@ export class WindowsAPI {
 
   private getLastFocused(event: ExtensionEvent) {
     const win = this.ctx.store.getLastFocusedWindow()
+    return win ? this.getWindowDetails(win) : null
+  }
+
+  private getCurrent(event: ExtensionEvent) {
+    const win = this.ctx.store.getCurrentWindow()
     return win ? this.getWindowDetails(win) : null
   }
 

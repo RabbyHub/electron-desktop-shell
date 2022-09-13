@@ -28,6 +28,17 @@ describe('chrome.windows', () => {
     })
   })
 
+  describe('getCurrent()', () => {
+    it('gets the current window', async () => {
+      // HACK: focus() doesn't actually emit this in tests
+      browser.window.emit('focus')
+      const windowId = browser.window.id
+      const result = await browser.crx.exec('windows.getCurrent')
+      expect(result).to.be.an('object')
+      expect(result.id).to.equal(windowId)
+    })
+  })
+
   describe('remove()', () => {
     it('removes the window', async () => {
       const windowId = browser.window.id
