@@ -1,8 +1,9 @@
 import { expect } from 'chai'
-import { app, webContents } from 'electron'
 import { emittedOnce } from './events-helpers'
 
 import { useExtensionBrowser, useServer } from './hooks'
+
+const DEBUG_RPC_UI = !!process.env.DEBUG_RPC_UI;
 
 describe('chrome.windows', () => {
   const server = useServer()
@@ -28,14 +29,40 @@ describe('chrome.windows', () => {
     })
   })
 
+  // TODO: add test about where windows.getCurrent could execute OK
   describe('getCurrent()', () => {
-    it('gets the current window', async () => {
-      // HACK: focus() doesn't actually emit this in tests
-      browser.window.emit('focus')
-      const windowId = browser.window.id
+    // no window got due to lack of host browser in this test suite:
+    // `browser.crx.exec` would execute the methods in `background.html` of `rpc` extension,
+    // so, there's no window to get.
+    // 
+    // but, if you execute windows.getCurrent in a pages in chrome extension context , it will work
+    it('in crx\' background context, the windows.getCurrent no effect', async () => {
       const result = await browser.crx.exec('windows.getCurrent')
+      expect(result).to.be.an('null')
+    })
+
+    it('call in html page in extension "chrome-rpc"', async function () {
+      if (DEBUG_RPC_UI) {
+        this.timeout(1e6)
+      }
+
+      const result = await browser.crx.callInRpcExtUI('windows.getCurrent')
       expect(result).to.be.an('object')
-      expect(result.id).to.equal(windowId)
+      expect(result.id).to.equal(browser.window.id)
+
+      // TODO: check result other fields
+      ;['focused', 'top', 'left', 'width', 'height', 'incognito', 'type', 'state', 'alwaysOnTop', 'sessionId'].forEach(field => {
+        expect(result).to.ownProperty(field)
+      })
+
+      if (DEBUG_RPC_UI) {
+        await new Promise(resolve => setTimeout(resolve, 1e6))
+      }
+    })
+
+    it('still no effect on background html', async () => {
+      const result = await browser.crx.exec('windows.getCurrent')
+      expect(result).to.be.an('null')
     })
   })
 

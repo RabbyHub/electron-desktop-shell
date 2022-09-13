@@ -43,10 +43,6 @@ export class ExtensionStore extends EventEmitter {
     return this.lastFocusedWindowId ? this.getWindowById(this.lastFocusedWindowId) : null
   }
 
-  getCurrentWindow() {
-    return this.getLastFocusedWindow()
-  }
-
   addWindow(window: Electron.BrowserWindow) {
     if (this.windows.has(window)) return
 
@@ -166,7 +162,7 @@ export class ExtensionStore extends EventEmitter {
   }
 
   getActiveTabOfCurrentWindow() {
-    const win = this.getCurrentWindow()
+    const win = this.getLastFocusedWindow()
     return win ? this.getActiveTabFromWindow(win) : undefined
   }
 

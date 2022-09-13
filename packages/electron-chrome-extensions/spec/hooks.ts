@@ -6,6 +6,8 @@ import { ElectronChromeExtensions } from '../dist'
 import { emittedOnce } from './events-helpers'
 import { addCrxPreload, createCrxSession } from './crx-helpers'
 
+const DEBUG_RPC_UI = !!process.env.DEBUG_RPC_UI;
+
 export const useServer = () => {
   const emptyPage = '<script>console.log("loaded")</script>'
 
@@ -60,7 +62,7 @@ export const useExtensionBrowser = (opts: {
     extension = await customSession.loadExtension(path.join(fixtures, opts.extensionName))
 
     w = new BrowserWindow({
-      show: false,
+      show: DEBUG_RPC_UI,
       webPreferences: { session: customSession, nodeIntegration: false, contextIsolation: true },
     })
 
@@ -115,6 +117,41 @@ export const useExtensionBrowser = (opts: {
         )
         const [, result] = await p
         return result
+      },
+
+      /**
+       * @description call method in extension `rpc`'s html page
+       */
+      async callInRpcExtUI(method: string, ...args: any[]) {
+        if (extension.name !== 'chrome-rpc') {
+          throw new Error('[callInRpcExtUI] extension name should be "chrome-rpc"')
+        } else {
+          console.log('[callInRpcExtUI] extension info:', extension);
+        }
+        const prevURL = w.webContents.getURL();
+        w.webContents.loadURL(`chrome-extension://${extension.id}/index.html`);
+
+        const p = emittedOnce(ipcMain, 'rpc-success')
+
+        await w.webContents.executeJavaScript(
+          `(async function () {
+            var method = "${method}";
+            var args = JSON.parse("${JSON.stringify(args)}");
+            // window.args = args;
+            var [apiName, subMethod] = method.split('.')
+
+            if (typeof chrome[apiName][subMethod] === 'function') {
+              var results = await chrome[apiName][subMethod](...args)
+              electronTest.sendIpc('rpc-success', results)
+            }
+          })();`
+        )
+
+        const [, result] = await p
+        console.log('[callInRpcExtUI] result:', result);
+
+        w.webContents.loadURL(prevURL);
+        return result;
       },
 
       async eventOnce(eventName: string) {

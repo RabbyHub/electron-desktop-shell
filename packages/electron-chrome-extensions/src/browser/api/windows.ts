@@ -25,7 +25,6 @@ export class WindowsAPI {
     const handle = this.ctx.router.apiHandler()
     handle('windows.get', this.get.bind(this))
     handle('windows.getCurrent', this.getCurrent.bind(this))
-    // TODO: how does getCurrent differ from getLastFocused?
     handle('windows.getLastFocused', this.getLastFocused.bind(this))
     handle('windows.getAll', this.getAll.bind(this))
     handle('windows.create', this.create.bind(this))
@@ -89,7 +88,7 @@ export class WindowsAPI {
 
   private getWindowFromId(id: number) {
     if (id === WindowsAPI.WINDOW_ID_CURRENT) {
-      return this.ctx.store.getCurrentWindow()
+      return this.ctx.store.getLastFocusedWindow()
     } else {
       return this.ctx.store.getWindowById(id)
     }
@@ -106,8 +105,11 @@ export class WindowsAPI {
     return win ? this.getWindowDetails(win) : null
   }
 
+  // not same with `getLastFocused`, `getCurrent` means the host window where javascript executing
   private getCurrent(event: ExtensionEvent) {
-    const win = this.ctx.store.getCurrentWindow()
+    const wc = event.sender;
+    const win = this.ctx.store.tabToWindow.get(wc) || BrowserWindow.fromWebContents(wc)
+
     return win ? this.getWindowDetails(win) : null
   }
 
