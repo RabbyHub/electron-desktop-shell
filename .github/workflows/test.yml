@@ -21,9 +21,9 @@ jobs:
       with:
         node-version: '16.x'
 
-    - name: Install dependencies
+    - name: Setup dependencies
       run: |
-        npm run boot
+        npm run boot-ci
 
     - name: Build
       run: |
