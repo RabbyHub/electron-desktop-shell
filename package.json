@@ -7,7 +7,7 @@
     "boot": "npm i -D && lerna bootstrap",
     "boot-ci": "npm i -D && lerna bootstrap --ci",
     "build": "lerna run build",
-    "start": "npm build && npm --prefix ./packages/shell start",
+    "start": "npm run build && npm --prefix ./packages/shell start",
     "start:debug": "cross-env SHELL_DEBUG=true DEBUG='electron-chrome-extensions*' npm start",
     "test": "lerna run test --stream",
     "ci": "lerna run build && lerna run ci --stream"
@@ -26,6 +26,7 @@
     "endOfLine": "lf"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "fs-extra": "^10.1.0",
     "lerna": "^5.5.1"
   }
