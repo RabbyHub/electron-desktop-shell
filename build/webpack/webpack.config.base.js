@@ -1,5 +1,3 @@
-const webpack = require('webpack')
-
 const base = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: 'source-map',
@@ -28,9 +26,11 @@ const base = {
     // new webpack.EnvironmentPlugin({
     //   NODE_ENV: 'production',
     // }),
-
-    new webpack.NamedModulesPlugin(),
   ],
+
+  optimization: {
+    moduleIds: 'named',
+  }
 }
 
 module.exports = base

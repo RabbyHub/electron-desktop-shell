@@ -1,5 +1,8 @@
 const path = require('path')
-const webpackBase = require('../../build/webpack/webpack.config.base')
+
+const webpackBase = {
+  ...require('../../build/webpack/webpack.config.base')
+}
 
 const main = {
   ...webpackBase,

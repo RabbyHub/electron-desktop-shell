@@ -3,26 +3,19 @@
   "version": "1.0.0",
   "description": "A minimal browser shell built on Electron.",
   "private": true,
-  "workspaces": [
-    "packages/shell",
-    "packages/electron-chrome-extensions",
-    "packages/electron-chrome-context-menu"
-  ],
   "scripts": {
-    "build": "yarn run build:context-menu && yarn run build:extensions",
-    "build:context-menu": "yarn --cwd ./packages/electron-chrome-context-menu build",
-    "build:extensions": "yarn --cwd ./packages/electron-chrome-extensions build",
-    "start": "yarn build && yarn --cwd ./packages/shell start",
-    "start:debug": "cross-env SHELL_DEBUG=true DEBUG='electron-chrome-extensions*' yarn start",
-    "test": "yarn test:extensions",
-    "test:extensions": "yarn --cwd ./packages/electron-chrome-extensions test"
+    "boot": "npm i -D && lerna bootstrap",
+    "build": "lerna run build",
+    "start": "npm build && npm --prefix ./packages/shell start",
+    "start:debug": "cross-env SHELL_DEBUG=true DEBUG='electron-chrome-extensions*' npm start",
+    "test": "lerna run test --stream",
+    "ci": "lerna run build && lerna run ci --stream"
   },
   "license": "GPL-3.0",
   "author": "Samuel Maddock <sam@samuelmaddock.com>",
   "contributors": [
     "RabbyHub"
   ],
-  "dependencies": {},
   "repository": "git@github.com:RabbyHub/electron-desktop-shell.git",
   "prettier": {
     "printWidth": 100,
@@ -30,5 +23,9 @@
     "jsonEnable": false,
     "semi": false,
     "endOfLine": "lf"
+  },
+  "devDependencies": {
+    "fs-extra": "^10.1.0",
+    "lerna": "^5.5.1"
   }
 }

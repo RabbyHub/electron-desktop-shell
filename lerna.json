@@ -1,0 +1,23 @@
+{
+  "packages": [
+    "packages/*"
+  ],
+  "version": "independent",
+  "command": {
+    "publish": {
+      "ignoreChanges": ["ignored-file", "*.md", "**/package-lock.json"],
+      "message": "chore(release): publish",
+      "registry": "https://registry.npmjs.org",
+      "npmClientArgs": ["--no-package-lock"]
+    },
+    "bootstrap": {
+      "registry": "https://registry.npmjs.org",
+      "npmClientArgs": ["--no-package-lock"]
+    },
+    "version": {
+      "ignoreChanges": ["**/package-lock.json"],
+      "allowBranch": ["master", "main", "feature/*"]
+    }
+  },
+  "npmClient": "npm"
+}
