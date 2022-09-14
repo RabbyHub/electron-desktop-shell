@@ -69,7 +69,7 @@ export const injectBrowserAction = () => {
 
   // Function body to run in the main world.
   // IMPORTANT: This must be self-contained, no closure variables can be used!
-  function mainWorldScript() {
+  function mainWorldScript(bA: typeof browserAction) {
     const DEFAULT_PARTITION = '_self'
 
     class BrowserActionElement extends HTMLButtonElement {
@@ -143,7 +143,7 @@ export const injectBrowserAction = () => {
       private activate(event: Event) {
         const rect = this.getBoundingClientRect()
 
-        browserAction.activate(this.partition || DEFAULT_PARTITION, {
+        bA.activate(this.partition || DEFAULT_PARTITION, {
           eventType: event.type,
           extensionId: this.id,
           tabId: this.tab,
@@ -208,7 +208,7 @@ export const injectBrowserAction = () => {
       private updateCallback() {
         this.updateId = undefined
 
-        const action = browserAction.getAction(this.id)
+        const action = bA.getAction(this.id)
 
         const activeTabId = this.tab
         const tabInfo = activeTabId > -1 ? action.tabs[activeTabId] : {}
@@ -336,21 +336,21 @@ export const injectBrowserAction = () => {
 
       private startObserving() {
         if (this.observing) return
-        browserAction.addEventListener('update', this.update)
-        browserAction.addObserver(this.partition || DEFAULT_PARTITION)
+        bA.addEventListener('update', this.update)
+        bA.addObserver(this.partition || DEFAULT_PARTITION)
         this.observing = true
       }
 
       private stopObserving() {
         if (!this.observing) return
-        browserAction.removeEventListener('update', this.update)
-        browserAction.removeObserver(this.partition || DEFAULT_PARTITION)
+        bA.removeEventListener('update', this.update)
+        bA.removeObserver(this.partition || DEFAULT_PARTITION)
         this.observing = false
       }
 
       private fetchState = async () => {
         try {
-          await browserAction.getState(this.partition || DEFAULT_PARTITION)
+          await bA.getState(this.partition || DEFAULT_PARTITION)
         } catch {
           console.error(
             `browser-action-list failed to update [tab: ${this.tab}, partition: '${this.partition}']`
@@ -391,11 +391,11 @@ export const injectBrowserAction = () => {
     contextBridge.exposeInMainWorld('browserAction', browserAction)
 
     // Must execute script in main world to modify custom component registry.
-    webFrame.executeJavaScript(`(${mainWorldScript}());`)
+    webFrame.executeJavaScript(`(${mainWorldScript}(browserAction));`)
   } catch {
     // When contextIsolation is disabled, contextBridge will throw an error.
     // If that's the case, we're in the main world so we can just execute our
     // function.
-    mainWorldScript()
+    mainWorldScript(browserAction)
   }
 }
