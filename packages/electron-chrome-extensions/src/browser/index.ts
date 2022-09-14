@@ -25,6 +25,10 @@ export interface ChromeExtensionOptions extends ChromeExtensionImpl {
    * JavaScript bundlers like Webpack are used in your build process.
    */
   modulePath?: string
+  /**
+   * if not provided, default <modulePath>/dist/js
+   */
+  preloadPath?: string
 }
 
 const sessionMap = new WeakMap<Electron.Session, ElectronChromeExtensions>()
@@ -40,6 +44,7 @@ export class ElectronChromeExtensions extends EventEmitter {
 
   private ctx: ExtensionContext
   private modulePath: string
+  private preloadPath: string
 
   private api: {
     browserAction: BrowserActionAPI
@@ -56,7 +61,7 @@ export class ElectronChromeExtensions extends EventEmitter {
   constructor(opts?: ChromeExtensionOptions) {
     super()
 
-    const { session = electronSession.defaultSession, modulePath, ...impl } = opts || {}
+    const { session = electronSession.defaultSession, modulePath, preloadPath, ...impl } = opts || {}
 
     if (sessionMap.has(session)) {
       throw new Error(`Extensions instance already exists for the given session`)
@@ -74,7 +79,8 @@ export class ElectronChromeExtensions extends EventEmitter {
       store,
     }
 
-    this.modulePath = modulePath || path.join(__dirname, '..')
+    this.modulePath = modulePath || path.join(__dirname, '..');
+    this.preloadPath = preloadPath || '';
 
     this.api = {
       browserAction: new BrowserActionAPI(this.ctx),
@@ -95,7 +101,7 @@ export class ElectronChromeExtensions extends EventEmitter {
     const { session } = this.ctx
     let preloads = session.getPreloads()
 
-    const preloadPath = path.join(this.modulePath, 'dist/preload.js')
+    const preloadPath = this.preloadPath || path.join(this.modulePath, 'dist/preload.js');
 
     const preloadIndex = preloads.indexOf(preloadPath)
     if (preloadIndex > -1) {

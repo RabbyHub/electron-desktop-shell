@@ -101,6 +101,7 @@ const { ElectronChromeExtensions } = require('electron-chrome-extensions')
 
 * `options` Object (optional)
   * `modulePath` String (optional) - Path to electron-chrome-extensions module files. Might be needed if JavaScript bundlers like Webpack are used in your build process.
+  * `preloadPath` String (optional) - Path to [`preload.js`] compiled from (./src/preload.ts), which just inject extensions APIs for `chrome-extension://`. We might want to customize path to our customized `preload.js` which includes `import '@rabby-wallet/electron-chrome-extensions/dist/preload'`. If not provided, default to `<modulePath>/dist/preload.js`
   * `session` Electron.Session (optional) - Session which should support
     Chrome extension APIs. `session.defaultSession` is used by default.
   * `createTab(details) => Promise<[Electron.WebContents, Electron.BrowserWindow]>` (optional) -
