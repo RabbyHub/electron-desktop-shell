@@ -1,7 +1,9 @@
+import path from 'node:path'
+import { parse } from 'node:url'
 import { BrowserWindow } from 'electron'
 import { ExtensionContext } from '../context'
 import { ExtensionEvent } from '../router'
-import { parse } from 'node:url'
+import { ensureSuffix } from '../utils'
 
 const debug = require('debug')('electron-chrome-extensions:windows')
 
@@ -10,11 +12,6 @@ const getWindowState = (win: BrowserWindow): chrome.windows.Window['state'] => {
   if (win.isMinimized()) return 'minimized'
   if (win.isFullScreen()) return 'fullscreen'
   return 'normal'
-}
-
-function ensureSuffix (url: string = '', suffix: string = '/') {
-  if (url.endsWith(suffix)) return url
-  return url + suffix
 }
 
 export class WindowsAPI {
@@ -124,9 +121,9 @@ export class WindowsAPI {
     const urlInfo = parse(url);
 
     if (!urlInfo.protocol && !urlInfo.hostname) {
-      url = `${baseURL}${url}`;
+      url = path.posix.join(baseURL, url);
     } else if (!urlInfo.hostname) {
-      url = `${baseURL}${url}`;
+      url = path.posix.join(baseURL, url);
     }
     
     const win = await this.ctx.store.createWindow(event, {...details, url})

@@ -1,6 +1,9 @@
+import path from 'node:path'
+import { parse } from 'node:url'
 import { BrowserWindow } from 'electron'
 import { ExtensionContext } from '../context'
 import { ExtensionEvent } from '../router'
+import { ensureSuffix } from '../utils'
 import { TabContents } from './common'
 import { WindowsAPI } from './windows'
 
@@ -143,7 +146,21 @@ export class TabsAPI {
   }
 
   private async create(event: ExtensionEvent, details: chrome.tabs.CreateProperties = {}) {
-    const tab = await this.ctx.store.createTab(details)
+    let url = details.url;
+
+    // TODO: add test for this process
+    if (url && event.extension) {
+      const urlInfo = parse(url || '');
+      const baseURL = ensureSuffix(event.extension.url, '/');
+
+      if (!urlInfo.protocol && !urlInfo.hostname) {
+        url = path.posix.join(baseURL, url);
+      } else if (!urlInfo.hostname) {
+        url = path.posix.join(baseURL, url);
+      }
+    }
+
+    const tab = await this.ctx.store.createTab({...details, url})
     const tabDetails = this.getTabDetails(tab)
     if (details.active) {
       queueMicrotask(() => this.onActivated(tab.id))
