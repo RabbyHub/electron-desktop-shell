@@ -44,6 +44,22 @@ export class WindowsAPI {
       this.onRemoved(windowId)
     })
 
+    const onEnterFullscreen = () => {
+      const details = this.getWindowDetails(window)
+      details.state = 'fullscreen';
+      this.ctx.store.windowDetailsCache.set(windowId, details)
+    };
+    window.on('enter-full-screen', onEnterFullscreen);
+    window.on('enter-html-full-screen', onEnterFullscreen);
+
+    const onLeaveFullscreen = () => {
+      const details = this.getWindowDetails(window)
+      details.state = getWindowState(window);
+      this.ctx.store.windowDetailsCache.set(windowId, details)
+    };
+    window.on('leave-full-screen', onLeaveFullscreen);
+    window.on('leave-html-full-screen', onLeaveFullscreen);
+
     this.onCreated(windowId)
 
     debug(`Observing window[${windowId}]`)
@@ -77,13 +93,14 @@ export class WindowsAPI {
 
   private getWindowDetails(win: BrowserWindow) {
     if (this.ctx.store.windowDetailsCache.has(win.id)) {
-      return this.ctx.store.windowDetailsCache.get(win.id)
+      return this.ctx.store.windowDetailsCache.get(win.id)!
     }
     const details = this.createWindowDetails(win)
     return details
   }
 
   private getWindowFromId(id: number) {
+    // is that correct?
     if (id === WindowsAPI.WINDOW_ID_CURRENT) {
       return this.ctx.store.getLastFocusedWindow()
     } else {
@@ -91,8 +108,13 @@ export class WindowsAPI {
     }
   }
 
-  private get(event: ExtensionEvent, windowId: number) {
-    const win = this.getWindowFromId(windowId)
+  private async get(event: ExtensionEvent, windowId: number) {
+    let win: Electron.BrowserWindow | null;
+    if (windowId === WindowsAPI.WINDOW_ID_CURRENT) {
+      win = await this.ctx.store.windowsGetCurrent(event) || this.ctx.store.getLastFocusedWindow() || null;
+    } else {
+      win = this.getWindowFromId(windowId) || null;
+    }
     if (!win) return { id: WindowsAPI.WINDOW_ID_NONE }
     return this.getWindowDetails(win)
   }
@@ -148,8 +170,16 @@ export class WindowsAPI {
         case 'minimized':
           win.minimize()
           break
+        case 'fullscreen':
+          if (win.fullScreenable) win.setFullScreen(true)
+          else {
+            console.warn('window is not fullScreenable')
+          }
+          break
         case 'normal': {
-          if (win.isMinimized() || win.isMaximized()) {
+          if (win.isFullScreen()) {
+            win.setFullScreen(false)
+          } else if (win.isMinimized() || win.isMaximized()) {
             win.restore()
           }
           break
