@@ -26,6 +26,10 @@ window.addEventListener('message', (event) => {
 
 evalInMainWorld(() => {
   window.exec = (json) => window.postMessage(JSON.parse(json))
+
+  setTimeout(() => {
+    window.electronTest.sendIpc('rpc-content_scripts-ready')
+  }, 300)
 })
 
 chrome.runtime.onMessage.addListener((message) => {

@@ -74,6 +74,7 @@ describe('chrome.browserAction', () => {
     const browser = useExtensionBrowser({
       url: server.getUrl,
       extensionName: 'chrome-browserAction-click',
+      contentScriptsReady: 'onClicked-content_scripts-ready',
     })
 
     it('fires listeners when activated', async () => {
@@ -122,6 +123,7 @@ describe('chrome.browserAction', () => {
     const browser = useExtensionBrowser({
       url: server.getUrl,
       extensionName: 'rpc',
+      contentScriptsReady: 'rpc-content_scripts-ready',
     })
 
     const props = [

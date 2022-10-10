@@ -6,7 +6,11 @@ import { useExtensionBrowser, useServer } from './hooks'
 
 describe('chrome.tabs', () => {
   const server = useServer()
-  const browser = useExtensionBrowser({ url: server.getUrl, extensionName: 'rpc' })
+  const browser = useExtensionBrowser({
+    url: server.getUrl,
+    extensionName: 'rpc',
+    contentScriptsReady: 'rpc-content_scripts-ready',
+  })
 
   describe('get()', () => {
     it('returns tab details', async () => {
@@ -82,7 +86,7 @@ describe('chrome.tabs', () => {
 
   describe('onCreated', () => {
     it('emits when tab is added', async () => {
-      const p = browser.crx.eventOnce('tabs.onCreated')
+      const p = browser.crx.rpcEventOnce('tabs.onCreated')
 
       const secondWindow = new BrowserWindow({
         show: false,

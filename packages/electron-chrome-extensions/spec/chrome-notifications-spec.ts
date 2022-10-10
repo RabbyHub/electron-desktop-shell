@@ -13,7 +13,11 @@ const basicOpts: chrome.notifications.NotificationOptions = {
 
 describe('chrome.notifications', () => {
   const server = useServer()
-  const browser = useExtensionBrowser({ url: server.getUrl, extensionName: 'rpc' })
+  const browser = useExtensionBrowser({
+    url: server.getUrl,
+    extensionName: 'rpc',
+    contentScriptsReady: 'rpc-content_scripts-ready'
+  })
 
   describe('create()', () => {
     it('creates and shows a basic notification', async () => {

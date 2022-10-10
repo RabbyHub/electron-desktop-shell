@@ -1,5 +1,6 @@
 import { expect } from 'chai'
-import { app, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
+import { IS_APP_GT_16 } from './app-ver'
 import { emittedOnce } from './events-helpers'
 
 import { useExtensionBrowser, useServer } from './hooks'
@@ -66,6 +67,7 @@ describe('chrome.contextMenus', () => {
   const browser = useExtensionBrowser({
     url: server.getUrl,
     extensionName: 'rpc',
+    contentScriptsReady: 'rpc-content_scripts-ready',
   })
 
   const getContextMenuItems = async () => {
@@ -85,7 +87,7 @@ describe('chrome.contextMenus', () => {
      * 
      * TODO: btw, we can compare version with semver if we want more strict check, but just soso now
      */
-    if (app.getVersion() > "16.0.0") {
+    if (IS_APP_GT_16) {
       browser.webContents.emit('context-menu', {}, getFakeContextMenuParams({
         pageURL: browser.webContents.getURL(),
       }))
@@ -94,6 +96,7 @@ describe('chrome.contextMenus', () => {
       const opts = { x: 0, y: 0, button: 'right' as const }
       browser.webContents.sendInputEvent({ ...opts, type: 'mouseDown' })
       browser.webContents.sendInputEvent({ ...opts, type: 'mouseUp' })
+      browser.webContents.sendInputEvent({ ...opts, type: 'contextMenu' })
     }
 
     return await promise

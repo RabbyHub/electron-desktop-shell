@@ -7,7 +7,11 @@ const DEBUG_RPC_UI = !!process.env.DEBUG_RPC_UI;
 
 describe('chrome.windows', () => {
   const server = useServer()
-  const browser = useExtensionBrowser({ url: server.getUrl, extensionName: 'rpc' })
+  const browser = useExtensionBrowser({
+    url: server.getUrl,
+    extensionName: 'rpc',
+    contentScriptsReady: 'rpc-content_scripts-ready',
+  })
 
   describe('get()', () => {
     it('gets details on the window', async () => {
