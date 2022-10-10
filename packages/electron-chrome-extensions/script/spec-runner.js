@@ -55,6 +55,16 @@ async function runMainProcessElectronTests () {
   let exe = require('electron');
   const runnerArgs = ['spec', ...unknownArgs.slice(2)];
 
+  if (process.platform === 'win32') {
+    /**
+     * We can just run cmd below if we can ensure script running in `cmd.exe` shell, but for more compatibility, we use `cmd.exe` explicitly.
+     * `process.env.ComSpec` would affect the shell, it's not always `cmd.exe` on Windows.
+     * @see https://nodejs.org/docs/latest-v16.x/api/child_process.html#default-windows-shell
+     */
+    // childProcess.spawnSync('chcp', ['65001']);
+    childProcess.spawnSync('cmd', ['/c', 'chcp', '65001']);
+  }
+
   const { status, signal } = childProcess.spawnSync(exe, runnerArgs, {
     cwd: path.resolve(__dirname, '..'),
     env: process.env,
