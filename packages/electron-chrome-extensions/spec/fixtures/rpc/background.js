@@ -1,7 +1,7 @@
 /* global chrome */
 
 const sendIpc = ({ tabId, name }) => {
-  chrome.tabs.sendMessage(tabId, { type: 'send-ipc', args: [name] })
+  chrome.tabs.sendMessage(tabId, { type: 'rpc-msg-from-bg', args: [name] })
 }
 
 const transformArgs = (args, sender) => {
@@ -32,7 +32,7 @@ const transformArgs = (args, sender) => {
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
   switch (message.type) {
-    case 'api': {
+    case 'rpc-call-api': {
       const { method, args } = message
 
       const [apiName, subMethod] = method.split('.')
@@ -45,7 +45,7 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
       break
     }
 
-    case 'event-once': {
+    case 'rpc-fast-event-once': {
       const { name } = message
 
       const [apiName, eventName] = name.split('.')

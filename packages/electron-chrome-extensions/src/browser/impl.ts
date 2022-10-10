@@ -17,7 +17,7 @@ export interface ChromeExtensionImpl {
   /**
    * @description get current window from where javascript is running
    */
-   windowsGetCurrent?: (win: Electron.BrowserWindow | null, ctx: {
+  windowsGetCurrent?: (win: Electron.BrowserWindow | null, ctx: {
     event: ExtensionEvent
     lastFocusedWindow: Electron.BrowserWindow | null
     // event: ExtensionEvent

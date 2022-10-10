@@ -146,10 +146,10 @@ export const useExtensionBrowser = (opts: {
     },
 
     crx: {
-      async exec(method: string, ...args: any[]) {
-        const p = emittedOnce(ipcMain, 'success')
+      async execRpc(method: string, ...args: any[]) {
+        const p = emittedOnce(ipcMain, 'rpc-exec-success')
         await w.webContents.executeJavaScript(
-          `exec('${JSON.stringify({ type: 'api', method, args })}')`
+          `exec('${JSON.stringify({ type: 'rpc-call-api', method, args })}')`
         )
         const [, result] = await p
         return result
@@ -167,7 +167,7 @@ export const useExtensionBrowser = (opts: {
         const prevURL = w.webContents.getURL();
         w.webContents.loadURL(`chrome-extension://${extension.id}/index.html`);
 
-        const p = emittedOnce(ipcMain, 'rpc-success')
+        const p = emittedOnce(ipcMain, 'rpc-fast-success')
 
         await w.webContents.executeJavaScript(
           `(async function () {
@@ -178,7 +178,7 @@ export const useExtensionBrowser = (opts: {
 
             if (typeof chrome[apiName][subMethod] === 'function') {
               var results = await chrome[apiName][subMethod](...args)
-              electronTest.sendIpc('rpc-success', results)
+              electronTest.sendIpc('rpc-fast-success', results)
             }
           })();`
         )
@@ -191,9 +191,9 @@ export const useExtensionBrowser = (opts: {
       },
 
       async rpcEventOnce(eventName: string) {
-        const p = emittedOnce(ipcMain, 'success')
+        const p = emittedOnce(ipcMain, 'rpc-exec-success')
         await w.webContents.executeJavaScript(
-          `exec('${JSON.stringify({ type: 'event-once', name: eventName })}')`
+          `exec('${JSON.stringify({ type: 'rpc-fast-event-once', name: eventName })}')`
         )
         const [, results] = await p
 

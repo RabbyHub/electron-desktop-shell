@@ -448,6 +448,7 @@ export const injectExtensionAPIs = () => {
   }
 
   try {
+    // TODO: use another featured/complex name for exposed object
     // Expose extension IPC to main world
     contextBridge.exposeInMainWorld('electron', electronContext)
 

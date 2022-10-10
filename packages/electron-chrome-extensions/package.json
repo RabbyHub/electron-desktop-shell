@@ -25,6 +25,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@types/debug": "^4.1.7",
     "debug": "^4.3.1"
   },
   "devDependencies": {

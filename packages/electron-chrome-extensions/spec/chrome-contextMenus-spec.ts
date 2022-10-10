@@ -106,7 +106,7 @@ describe('chrome.contextMenus', () => {
     it('creates item with label', async () => {
       const id = uuid()
       const title = 'ヤッホー'
-      await browser.crx.exec('contextMenus.create', { id, title })
+      await browser.crx.execRpc('contextMenus.create', { id, title })
       const items = await getContextMenuItems()
       expect(items).to.have.lengthOf(1)
       expect(items[0].id).to.equal(id)
@@ -116,8 +116,8 @@ describe('chrome.contextMenus', () => {
     it('creates a child item', async () => {
       const parentId = uuid()
       const id = uuid()
-      await browser.crx.exec('contextMenus.create', { id: parentId, title: 'parent' })
-      await browser.crx.exec('contextMenus.create', { id, parentId, title: 'child' })
+      await browser.crx.execRpc('contextMenus.create', { id: parentId, title: 'parent' })
+      await browser.crx.execRpc('contextMenus.create', { id, parentId, title: 'child' })
       const items = await getContextMenuItems()
       expect(items).to.have.lengthOf(1)
       expect(items[0].label).to.equal('parent')
@@ -128,7 +128,7 @@ describe('chrome.contextMenus', () => {
 
     it('invokes the create callback', async () => {
       const ipcName = 'create-callback'
-      await browser.crx.exec('contextMenus.create', {
+      await browser.crx.execRpc('contextMenus.create', {
         title: 'callback',
         onclick: { __IPC_FN__: ipcName },
       })
@@ -142,8 +142,8 @@ describe('chrome.contextMenus', () => {
   describe('remove()', () => {
     it('removes item', async () => {
       const id = uuid()
-      await browser.crx.exec('contextMenus.create', { id })
-      await browser.crx.exec('contextMenus.remove', id)
+      await browser.crx.execRpc('contextMenus.create', { id })
+      await browser.crx.execRpc('contextMenus.remove', id)
       const items = await getContextMenuItems()
       expect(items).to.be.empty
     })
@@ -151,9 +151,9 @@ describe('chrome.contextMenus', () => {
 
   describe('removeAll()', () => {
     it('removes all items', async () => {
-      await browser.crx.exec('contextMenus.create', {})
-      await browser.crx.exec('contextMenus.create', {})
-      await browser.crx.exec('contextMenus.removeAll')
+      await browser.crx.execRpc('contextMenus.create', {})
+      await browser.crx.execRpc('contextMenus.create', {})
+      await browser.crx.execRpc('contextMenus.removeAll')
       const items = await getContextMenuItems()
       expect(items).to.be.empty
     })

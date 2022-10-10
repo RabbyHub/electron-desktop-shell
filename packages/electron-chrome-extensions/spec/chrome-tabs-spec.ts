@@ -15,7 +15,7 @@ describe('chrome.tabs', () => {
   describe('get()', () => {
     it('returns tab details', async () => {
       const tabId = browser.window.webContents.id
-      const result = await browser.crx.exec('tabs.get', tabId)
+      const result = await browser.crx.execRpc('tabs.get', tabId)
       expect(result).to.be.an('object')
       expect(result.id).to.equal(tabId)
       expect(result.windowId).to.equal(browser.window.id)
@@ -27,7 +27,7 @@ describe('chrome.tabs', () => {
       const tabId = browser.window.webContents.id
       const updateUrl = `${server.getUrl()}/foo`
       const navigatePromise = emittedOnce(browser.window.webContents, 'did-navigate')
-      browser.crx.exec('tabs.update', tabId, { url: updateUrl })
+      browser.crx.execRpc('tabs.update', tabId, { url: updateUrl })
       await navigatePromise
       expect(browser.window.webContents.getURL()).to.equal(updateUrl)
     })
@@ -35,14 +35,14 @@ describe('chrome.tabs', () => {
 
   describe('getCurrent()', () => {
     it('fails to get the active tab from a non-tab context', async () => {
-      const result = await browser.crx.exec('tabs.getCurrent')
+      const result = await browser.crx.execRpc('tabs.getCurrent')
       expect(result).to.not.be.an('object')
     })
   })
 
   describe('query()', () => {
     it('gets the active tab', async () => {
-      const result = await browser.crx.exec('tabs.query', { active: true })
+      const result = await browser.crx.execRpc('tabs.query', { active: true })
       expect(result).to.be.an('array')
       expect(result).to.be.length(1)
       expect(result[0].id).to.be.equal(browser.window.webContents.id)
@@ -61,7 +61,7 @@ describe('chrome.tabs', () => {
 
       browser.extensions.addTab(secondWindow.webContents, secondWindow)
 
-      const result = await browser.crx.exec('tabs.query', { active: true })
+      const result = await browser.crx.execRpc('tabs.query', { active: true })
       expect(result).to.be.an('array')
       expect(result).to.be.length(2)
       expect(result[0].windowId).to.be.equal(browser.window.id)
@@ -72,14 +72,14 @@ describe('chrome.tabs', () => {
   describe('executeScript()', () => {
     it('injects code into a tab', async () => {
       const tabId = browser.window.webContents.id
-      const [result] = await browser.crx.exec('tabs.executeScript', tabId, {
+      const [result] = await browser.crx.execRpc('tabs.executeScript', tabId, {
         code: 'location.href',
       })
       expect(result).to.equal(browser.window.webContents.getURL())
     })
 
     it('injects code into the active tab', async () => {
-      const [result] = await browser.crx.exec('tabs.executeScript', { code: 'location.href' })
+      const [result] = await browser.crx.execRpc('tabs.executeScript', { code: 'location.href' })
       expect(result).to.equal(browser.window.webContents.getURL())
     })
   })

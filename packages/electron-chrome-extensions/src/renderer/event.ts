@@ -1,6 +1,5 @@
 import { ipcRenderer } from 'electron'
-
-const formatIpcName = (name: string) => `crx-${name}`
+import { formatIpcName } from '../isomorphic/ipc'
 
 const listenerMap = new Map<string, number>()
 
