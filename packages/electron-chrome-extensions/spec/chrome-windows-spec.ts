@@ -36,7 +36,7 @@ describe('chrome.windows', () => {
     // so, there's no window to get.
     // 
     // but, if you execute windows.getCurrent in a pages in chrome extension context , it will work
-    it('in crx\' background context, the windows.getCurrent no effect', async () => {
+    it(`in crx' background context, the windows.getCurrent no effect`, async () => {
       const result = await browser.crx.exec('windows.getCurrent')
       expect(result).to.be.an('null')
     })

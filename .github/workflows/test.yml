@@ -21,7 +21,7 @@ jobs:
         os: [ubuntu-18.04, windows-2019, macos-10.15]
         arch: [amd64] # pointless now
         # electron_ver: ["^16.0.0", "^17.0.0", "^18.0.0", "^19.0.0", "^20.0.0", "^21.0.0"]
-        electron_ver: ["^16.0.0", "^17.0.0"]
+        electron_ver: ["^16.0.0", "^17.0.0", "^18.0.0", "^19.0.0"]
 
     steps:
     - name: Checkout Repo
