@@ -12,7 +12,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: Test on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, windows-2019, macos-10.15]
+        arch: [amd64] # pointless now
 
     steps:
     - name: Checkout Repo
