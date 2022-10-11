@@ -17,7 +17,7 @@ async function exec(action) {
     chrome.runtime.sendMessage(action, resolve)
   })
 
-  sendIpc('success', result)
+  sendIpc('rpc-exec-success', result)
 }
 
 window.addEventListener('message', (event) => {
@@ -26,11 +26,15 @@ window.addEventListener('message', (event) => {
 
 evalInMainWorld(() => {
   window.exec = (json) => window.postMessage(JSON.parse(json))
+
+  setTimeout(() => {
+    window.electronTest.sendIpc('rpc-content_scripts-ready')
+  }, 300)
 })
 
 chrome.runtime.onMessage.addListener((message) => {
   switch (message.type) {
-    case 'send-ipc': {
+    case 'rpc-msg-from-bg': {
       const [name] = message.args
       sendIpc(name)
       break

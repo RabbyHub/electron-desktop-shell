@@ -27,10 +27,9 @@
 /**
  * @param {!EventTarget} target
  * @param {string} eventName
- * @return {!Promise<!Event>}
  */
 export const waitForEvent = (target: EventTarget, eventName: string) => {
-  return new Promise((resolve) => {
+  return new Promise<any>((resolve) => {
     target.addEventListener(eventName, resolve, { once: true })
   })
 }
@@ -38,9 +37,8 @@ export const waitForEvent = (target: EventTarget, eventName: string) => {
 /**
  * @param {!EventEmitter} emitter
  * @param {string} eventName
- * @return {!Promise<!Array>} With Event as the first item.
  */
-export const emittedOnce = (
+export const emittedOnce = async (
   emitter: NodeJS.EventEmitter,
   eventName: string,
   trigger?: () => void
@@ -71,19 +69,19 @@ export const emittedNTimes = async (
   return p
 }
 
-export const emittedUntil = async (
+export const emittedUntil = async <T extends any[] = any[]>(
   emitter: NodeJS.EventEmitter,
   eventName: string,
-  untilFn: Function
+  untilFn: (...args: T) => void
 ) => {
-  const p = new Promise<any[]>((resolve) => {
-    const handler = (...args: any[]) => {
-      if (untilFn(...args)) {
-        emitter.removeListener(eventName, handler)
+  const p = new Promise<T>((resolve) => {
+    const handler = (...args: T) => {
+      if ((untilFn as any)(...args)) {
+        emitter.removeListener(eventName, handler as any)
         resolve(args)
       }
     }
-    emitter.on(eventName, handler)
+    emitter.on(eventName, handler as any)
   })
   return p
 }

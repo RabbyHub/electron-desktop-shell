@@ -13,25 +13,29 @@ const basicOpts: chrome.notifications.NotificationOptions = {
 
 describe('chrome.notifications', () => {
   const server = useServer()
-  const browser = useExtensionBrowser({ url: server.getUrl, extensionName: 'rpc' })
+  const browser = useExtensionBrowser({
+    url: server.getUrl,
+    extensionName: 'rpc',
+    contentScriptsReady: 'rpc-content_scripts-ready'
+  })
 
   describe('create()', () => {
     it('creates and shows a basic notification', async () => {
       const notificationId = uuid()
-      const result = await browser.crx.exec('notifications.create', notificationId, basicOpts)
+      const result = await browser.crx.execRpc('notifications.create', notificationId, basicOpts)
       expect(result).to.equal(notificationId)
-      await browser.crx.exec('notifications.clear', notificationId)
+      await browser.crx.execRpc('notifications.clear', notificationId)
     })
 
     it('ignores invalid options', async () => {
       const notificationId = uuid()
-      const result = await browser.crx.exec('notifications.create', notificationId, {})
+      const result = await browser.crx.execRpc('notifications.create', notificationId, {})
       expect(result).is.null
     })
 
     it('ignores icons outside of extensions directory', async () => {
       const notificationId = uuid()
-      const result = await browser.crx.exec('notifications.create', notificationId, {
+      const result = await browser.crx.execRpc('notifications.create', notificationId, {
         ...basicOpts,
         iconUrl: '../chrome-browserAction/icon_16.png',
       })
@@ -39,19 +43,19 @@ describe('chrome.notifications', () => {
     })
 
     it('creates a notification with no ID given', async () => {
-      const notificationId = await browser.crx.exec('notifications.create', basicOpts)
+      const notificationId = await browser.crx.execRpc('notifications.create', basicOpts)
       expect(notificationId).to.be.string
-      await browser.crx.exec('notifications.clear', notificationId)
+      await browser.crx.execRpc('notifications.clear', notificationId)
     })
   })
 
   describe('getAll()', () => {
     it('lists created notification', async () => {
       const notificationId = uuid()
-      await browser.crx.exec('notifications.create', notificationId, basicOpts)
-      const list = await browser.crx.exec('notifications.getAll')
+      await browser.crx.execRpc('notifications.create', notificationId, basicOpts)
+      const list = await browser.crx.execRpc('notifications.getAll')
       expect(list).to.deep.equal([notificationId])
-      await browser.crx.exec('notifications.clear', notificationId)
+      await browser.crx.execRpc('notifications.clear', notificationId)
     })
   })
 })

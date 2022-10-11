@@ -1,6 +1,7 @@
 import { app, Extension, ipcMain, session, Session, WebContents } from 'electron'
 
-const createDebug = require('debug')
+import createDebug from 'debug'
+import { formatIpcName } from '../isomorphic/ipc'
 
 // Shorten base64 encoded icons
 const shortenValues = (k: string, v: any) =>
@@ -133,7 +134,7 @@ interface EventListener {
 const eventListenerEquals = (eventListener: EventListener) => (other: EventListener) =>
   other.host === eventListener.host && other.extensionId === eventListener.extensionId
 
-export class ExtensionRouter {
+export class ExtensionRouter implements RoutingDelegateObserver {
   private handlers: HandlerMap = new Map()
   private listeners: Map<EventName, EventListener[]> = new Map()
 
@@ -181,7 +182,7 @@ export class ExtensionRouter {
     }
   }
 
-  private observeListenerHost(host: Electron.WebContents) {
+  private observeListenerHost(host: EventListener['host']) {
     debug(`observing listener [id:${host.id}, url:'${host.getURL()}']`)
     host.once('destroyed', () => {
       debug(`extension host destroyed [id:${host.id}]`)
@@ -300,8 +301,10 @@ export class ExtensionRouter {
 
     if (extensionId) {
       // TODO: extension permissions check
-
+      debug(`sendEvent '${eventName}' to extension '${extensionId}'`)
       eventListeners = eventListeners?.filter((el) => el.extensionId === extensionId)
+    } else {
+      debug(`broadcast event '${eventName}' to all extensions`)
     }
 
     if (!eventListeners || eventListeners.length === 0) {
@@ -316,8 +319,7 @@ export class ExtensionRouter {
         continue
       }
 
-      const ipcName = `crx-${eventName}`
-      host.send(ipcName, ...args)
+      host.send(formatIpcName(eventName), ...args)
     }
   }
 

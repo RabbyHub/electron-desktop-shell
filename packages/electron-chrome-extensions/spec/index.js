@@ -104,6 +104,7 @@ app
       .alias('i', 'invert').argv
 
     const Mocha = require('mocha')
+    /** @type {Mocha.MochaOptions} */
     const mochaOptions = {}
     if (process.env.MOCHA_REPORTER) {
       mochaOptions.reporter = process.env.MOCHA_REPORTER
@@ -113,6 +114,7 @@ app
         reporterEnabled: process.env.MOCHA_MULTI_REPORTERS,
       }
     }
+    mochaOptions.color = true
     const mocha = new Mocha(mochaOptions)
 
     // The cleanup method is registered this way rather than through an
@@ -130,7 +132,7 @@ app
     })
 
     if (!process.env.MOCHA_REPORTER) {
-      mocha.ui('bdd').reporter('tap')
+      mocha.ui('bdd').reporter('spec')
     }
     const mochaTimeout = process.env.MOCHA_TIMEOUT || 30000
     mocha.timeout(mochaTimeout)

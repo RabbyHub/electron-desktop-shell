@@ -42,6 +42,8 @@ export const useExtensionBrowser = (opts: {
   file?: string
   extensionName: string
   openDevTools?: boolean
+  browserWindowOptions?: Electron.BrowserWindowConstructorOptions
+  contentScriptsReady?: string | false
 }) => {
   let w: Electron.BrowserWindow
   let extensions: ElectronChromeExtensions
@@ -49,7 +51,15 @@ export const useExtensionBrowser = (opts: {
   let partition: string
   let customSession: Electron.Session
 
+  const waitings: Promise<any>[] = []
+
+  before(async () => {
+    await Promise.all(waitings);
+  })
+
   beforeEach(async () => {
+    const eachWatings: Promise<any>[] = []
+
     const sessionDetails = createCrxSession()
 
     partition = sessionDetails.partition
@@ -59,11 +69,34 @@ export const useExtensionBrowser = (opts: {
 
     extensions = new ElectronChromeExtensions({ session: customSession })
 
+    /**
+     * @description In most REAL cases, we just send ipc message to main process or invoke main process method.
+     * we don't need wait for 3rd-parties' content_scripts ready (because we forbid them to communicate with main process).
+     * 
+     * In these unit tests, some extensions loaded to test if call chains of mv2 below works:
+     * 
+     * 1. content_scripts -- chrome.runtime.sendMessage --> background.js
+     * 2. background.js -- call --> main process
+     * 3. main -- reply -> background.js
+     * 4. background.js -- reply -> content_scripts
+     * 
+     * This workflow are not allowed in 3rd party extensions by default. so we don't worry if the content_scripts ready.
+     */
+    if (opts.contentScriptsReady) {
+      eachWatings.push(emittedOnce(ipcMain, opts.contentScriptsReady))
+    }
     extension = await customSession.loadExtension(path.join(fixtures, opts.extensionName))
 
     w = new BrowserWindow({
       show: DEBUG_RPC_UI,
-      webPreferences: { session: customSession, nodeIntegration: false, contextIsolation: true },
+      ...opts.browserWindowOptions,
+      webPreferences: {
+        session: customSession,
+        nodeIntegration: false,
+        sandbox: true,
+        contextIsolation: true,
+        ...opts.browserWindowOptions?.webPreferences,
+      },
     })
 
     if (opts.openDevTools) {
@@ -77,6 +110,9 @@ export const useExtensionBrowser = (opts: {
     } else if (opts.url) {
       await w.loadURL(opts.url())
     }
+    
+    if (eachWatings.length)
+      await Promise.all(eachWatings);
   })
 
   afterEach(() => {
@@ -110,10 +146,10 @@ export const useExtensionBrowser = (opts: {
     },
 
     crx: {
-      async exec(method: string, ...args: any[]) {
-        const p = emittedOnce(ipcMain, 'success')
+      async execRpc(method: string, ...args: any[]) {
+        const p = emittedOnce(ipcMain, 'rpc-exec-success')
         await w.webContents.executeJavaScript(
-          `exec('${JSON.stringify({ type: 'api', method, args })}')`
+          `exec('${JSON.stringify({ type: 'rpc-call-api', method, args })}')`
         )
         const [, result] = await p
         return result
@@ -131,7 +167,7 @@ export const useExtensionBrowser = (opts: {
         const prevURL = w.webContents.getURL();
         w.webContents.loadURL(`chrome-extension://${extension.id}/index.html`);
 
-        const p = emittedOnce(ipcMain, 'rpc-success')
+        const p = emittedOnce(ipcMain, 'rpc-fast-success')
 
         await w.webContents.executeJavaScript(
           `(async function () {
@@ -142,7 +178,7 @@ export const useExtensionBrowser = (opts: {
 
             if (typeof chrome[apiName][subMethod] === 'function') {
               var results = await chrome[apiName][subMethod](...args)
-              electronTest.sendIpc('rpc-success', results)
+              electronTest.sendIpc('rpc-fast-success', results)
             }
           })();`
         )
@@ -154,10 +190,10 @@ export const useExtensionBrowser = (opts: {
         return result;
       },
 
-      async eventOnce(eventName: string) {
-        const p = emittedOnce(ipcMain, 'success')
+      async rpcEventOnce(eventName: string) {
+        const p = emittedOnce(ipcMain, 'rpc-exec-success')
         await w.webContents.executeJavaScript(
-          `exec('${JSON.stringify({ type: 'event-once', name: eventName })}')`
+          `exec('${JSON.stringify({ type: 'rpc-fast-event-once', name: eventName })}')`
         )
         const [, results] = await p
 

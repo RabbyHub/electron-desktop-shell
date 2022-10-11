@@ -25,6 +25,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@types/debug": "^4.1.7",
     "debug": "^4.3.1"
   },
   "devDependencies": {
@@ -41,7 +42,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "colors": "^1.4.0",
-    "electron": "15.0.0-beta.2",
+    "electron": "^16.2.8",
     "esbuild": "^0.12.14",
     "mocha": "^8.2.1",
     "ts-node": "^10.9.1",
