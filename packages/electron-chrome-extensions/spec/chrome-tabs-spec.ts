@@ -10,6 +10,11 @@ describe('chrome.tabs', () => {
     url: server.getUrl,
     extensionName: 'rpc',
     contentScriptsReady: 'rpc-content_scripts-ready',
+    chromeExtensionOptions: {
+      windowsGetCurrent: (win, { event, lastFocusedWindow }) => {
+        return win || lastFocusedWindow!
+      }
+    }
   })
 
   describe('get()', () => {

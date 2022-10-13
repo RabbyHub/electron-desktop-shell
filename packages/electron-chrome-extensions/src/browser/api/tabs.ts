@@ -178,8 +178,11 @@ export class TabsAPI {
     }
   }
 
-  private query(event: ExtensionEvent, info: chrome.tabs.QueryInfo = {}) {
+  private async query(event: ExtensionEvent, info: chrome.tabs.QueryInfo = {}) {
     const isSet = (value: any) => typeof value !== 'undefined'
+
+    const lastFocusedWindow = this.ctx.store.getLastFocusedWindow() || null;
+    const currentWin = await this.ctx.store.windowsGetCurrent(event);
 
     const filteredTabs = Array.from(this.ctx.store.tabs)
       .map(this.getTabDetails.bind(this))
@@ -193,14 +196,23 @@ export class TabsAPI {
         if (isSet(info.discarded) && info.discarded !== tab.discarded) return false
         if (isSet(info.autoDiscardable) && info.autoDiscardable !== tab.autoDiscardable)
           return false
-        // if (isSet(info.currentWindow)) return false
-        // if (isSet(info.lastFocusedWindow)) return false
+
+        if (isSet(info.currentWindow)) {
+          if (info.currentWindow && !currentWin) return false;
+          if (info.currentWindow && currentWin?.id !== tab.windowId) return false;
+        }
+
+        if (isSet(info.lastFocusedWindow)) {
+          if (info.lastFocusedWindow && !lastFocusedWindow) return false;
+          if (info.lastFocusedWindow && lastFocusedWindow?.id !== tab.windowId) return false;
+        }
+        
         if (isSet(info.status) && info.status !== tab.status) return false
         if (isSet(info.title) && info.title !== tab.title) return false // TODO: pattern match
         if (isSet(info.url) && info.url !== tab.url) return false // TODO: match URL pattern
         if (isSet(info.windowId)) {
           if (info.windowId === TabsAPI.WINDOW_ID_CURRENT) {
-            if (this.ctx.store.lastFocusedWindowId !== tab.windowId) return false
+            if (!currentWin || (currentWin?.id !== tab.windowId)) return false
           } else if (info.windowId !== tab.windowId) {
             return false
           }

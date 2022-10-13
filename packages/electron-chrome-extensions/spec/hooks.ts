@@ -2,7 +2,7 @@ import { ipcMain, BrowserWindow, app, Extension } from 'electron'
 import * as http from 'http'
 import * as path from 'path'
 import { AddressInfo } from 'net'
-import { ElectronChromeExtensions } from '../dist'
+import { ChromeExtensionOptions, ElectronChromeExtensions } from '../dist'
 import { emittedOnce } from './events-helpers'
 import { addCrxPreload, createCrxSession } from './crx-helpers'
 
@@ -44,6 +44,7 @@ export const useExtensionBrowser = (opts: {
   openDevTools?: boolean
   browserWindowOptions?: Electron.BrowserWindowConstructorOptions
   contentScriptsReady?: string | false
+  chromeExtensionOptions?: ChromeExtensionOptions
 }) => {
   let w: Electron.BrowserWindow
   let extensions: ElectronChromeExtensions
@@ -67,7 +68,10 @@ export const useExtensionBrowser = (opts: {
 
     addCrxPreload(customSession)
 
-    extensions = new ElectronChromeExtensions({ session: customSession })
+    extensions = new ElectronChromeExtensions({
+      ...opts?.chromeExtensionOptions,
+      session: customSession
+    })
 
     /**
      * @description In most REAL cases, we just send ipc message to main process or invoke main process method.

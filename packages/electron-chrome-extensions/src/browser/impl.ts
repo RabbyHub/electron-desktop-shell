@@ -1,10 +1,12 @@
 import type { ExtensionEvent } from "./router"
 
+type PromiseOrIt<T> = Promise<T> | T
+
 /** App-specific implementation details for extensions. */
 export interface ChromeExtensionImpl {
   createTab?(
     details: chrome.tabs.CreateProperties
-  ): Promise<[Electron.WebContents, Electron.BrowserWindow]>
+  ): PromiseOrIt<[Electron.WebContents, Electron.BrowserWindow]>
   selectTab?(tab: Electron.WebContents, window: Electron.BrowserWindow): void
   removeTab?(tab: Electron.WebContents, window: Electron.BrowserWindow): void
 
@@ -21,7 +23,7 @@ export interface ChromeExtensionImpl {
     event: ExtensionEvent
     lastFocusedWindow: Electron.BrowserWindow | null
     // event: ExtensionEvent
-  }) => Promise<Electron.BrowserWindow | null>
-  createWindow?(details: chrome.windows.CreateData): Promise<Electron.BrowserWindow>
+  }) => PromiseOrIt<Electron.BrowserWindow | null>
+  createWindow?(details: chrome.windows.CreateData): PromiseOrIt<Electron.BrowserWindow>
   removeWindow?(window: Electron.BrowserWindow): void
 }
