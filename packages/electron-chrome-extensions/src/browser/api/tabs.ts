@@ -160,7 +160,7 @@ export class TabsAPI {
       }
     }
 
-    const tab = await this.ctx.store.createTab({...details, url})
+    const tab = await this.ctx.store.createTab({...details, url}, event)
     const tabDetails = this.getTabDetails(tab)
     if (details.active) {
       queueMicrotask(() => this.onActivated(tab.id))

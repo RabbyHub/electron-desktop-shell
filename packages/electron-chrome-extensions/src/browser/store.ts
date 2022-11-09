@@ -74,7 +74,7 @@ export class ExtensionStore extends EventEmitter {
       throw new Error('createWindow is not implemented')
     }
 
-    const win = await this.impl.createWindow(details)
+    const win = await this.impl.createWindow(details, { event })
 
     this.addWindow(win)
 
@@ -136,7 +136,7 @@ export class ExtensionStore extends EventEmitter {
     this.emit('tab-removed', tabId)
   }
 
-  async createTab(details: chrome.tabs.CreateProperties) {
+  async createTab(details: chrome.tabs.CreateProperties, event: ExtensionEvent) {
     if (typeof this.impl.createTab !== 'function') {
       throw new Error('createTab is not implemented')
     }
@@ -146,7 +146,7 @@ export class ExtensionStore extends EventEmitter {
       details.windowId = this.lastFocusedWindowId
     }
 
-    const result = await this.impl.createTab(details)
+    const result = await this.impl.createTab(details, { event })
 
     if (!Array.isArray(result)) {
       throw new Error('createTab must return an array of [tab, window]')
