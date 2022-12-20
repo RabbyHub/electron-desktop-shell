@@ -44,6 +44,28 @@ export class WindowsAPI {
       this.onRemoved(windowId)
     })
 
+    const onRestoreOrMove = () => {
+      const details = this.getWindowDetails(window)
+      details.state = 'normal';
+      this.ctx.store.windowDetailsCache.set(windowId, details)
+    };
+    window.on('restore', onRestoreOrMove)
+    if (process.platform === 'win32') {
+      window.on('moved', onRestoreOrMove)
+    }
+
+    window.on('minimize', () => {
+      const details = this.getWindowDetails(window)
+      details.state = 'minimized';
+      this.ctx.store.windowDetailsCache.set(windowId, details)
+    })
+
+    window.on('maximize', () => {
+      const details = this.getWindowDetails(window)
+      details.state = 'maximized';
+      this.ctx.store.windowDetailsCache.set(windowId, details)
+    })
+
     const onEnterFullscreen = () => {
       const details = this.getWindowDetails(window)
       details.state = 'fullscreen';
@@ -99,12 +121,12 @@ export class WindowsAPI {
     return details
   }
 
-  private getWindowFromId(id: number) {
-    // is that correct?
+  private async getWindowFromId(event: ExtensionEvent, id: number) {
     if (id === WindowsAPI.WINDOW_ID_CURRENT) {
-      return this.ctx.store.getLastFocusedWindow()
+      return (await this.ctx.store.windowsGetCurrent(event))
+        || this.ctx.store.getLastFocusedWindow()
     } else {
-      return this.ctx.store.getWindowById(id)
+      return this.ctx.store.getWindowById(event, id)
     }
   }
 
@@ -113,7 +135,7 @@ export class WindowsAPI {
     if (windowId === WindowsAPI.WINDOW_ID_CURRENT) {
       win = await this.ctx.store.windowsGetCurrent(event) || this.ctx.store.getLastFocusedWindow() || null;
     } else {
-      win = this.getWindowFromId(windowId) || null;
+      win = await this.getWindowFromId(event, windowId) || null;
     }
     if (!win) return { id: WindowsAPI.WINDOW_ID_NONE }
     return this.getWindowDetails(win)
@@ -157,7 +179,7 @@ export class WindowsAPI {
     windowId: number,
     updateProperties: chrome.windows.UpdateInfo = {}
   ) {
-    const win = this.getWindowFromId(windowId)
+    const win = await this.getWindowFromId(event, windowId)
     if (!win) return
 
     const props = updateProperties
@@ -191,7 +213,7 @@ export class WindowsAPI {
   }
 
   private async remove(event: ExtensionEvent, windowId: number = WindowsAPI.WINDOW_ID_CURRENT) {
-    const win = this.getWindowFromId(windowId)
+    const win = await this.getWindowFromId(event, windowId)
     if (!win) return
     const removedWindowId = win.id
     await this.ctx.store.removeWindow(win)
@@ -199,7 +221,7 @@ export class WindowsAPI {
   }
 
   onCreated(windowId: number) {
-    const window = this.ctx.store.getWindowById(windowId)
+    const window = this.ctx.store.findWindowById(windowId)
     if (!window) return
     const windowDetails = this.getWindowDetails(window)
     this.ctx.router.broadcastEvent('windows.onCreated', windowDetails)

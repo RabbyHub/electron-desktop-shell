@@ -25,8 +25,10 @@ export interface ChromeExtensionImpl {
    */
   windowsGetCurrent?: (win: Electron.BrowserWindow | null, ctx: ImplContext & {
     lastFocusedWindow: Electron.BrowserWindow | null
-    // event: ExtensionEvent
   }) => PromiseOrIt<Electron.BrowserWindow | null>
+  getWindowById?: (ctx: ImplContext & {
+    foundWindow: Electron.BrowserWindow | undefined,
+  }, id: number) => PromiseOrIt<Electron.BrowserWindow | null>
   createWindow?(details: chrome.windows.CreateData, ctx: ImplContext): PromiseOrIt<Electron.BrowserWindow>
   removeWindow?(window: Electron.BrowserWindow): void
 }

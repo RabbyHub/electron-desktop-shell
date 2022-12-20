@@ -129,6 +129,11 @@ export class ElectronChromeExtensions extends EventEmitter {
     this.ctx.store.addTab(tab, window)
   }
 
+  /** Add window created outside/before extensions initialized */
+  addWindow(window: Electron.BrowserWindow) {
+    this.ctx.store.addWindow(window)
+  }
+
   /** Notify extension system that the active tab has changed. */
   selectTab(tab: Electron.WebContents) {
     if (this.ctx.store.tabs.has(tab)) {

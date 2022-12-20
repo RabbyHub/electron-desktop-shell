@@ -33,14 +33,21 @@ export class ExtensionStore extends EventEmitter {
     super()
   }
 
-  getWindowById(windowId: number) {
+  async getWindowById(event: ExtensionEvent, windowId: number) {
+    const foundWindow = this.findWindowById(windowId);
+    const window = this.impl.getWindowById?.({ event, foundWindow }, windowId)
+
+    return window || foundWindow || null;
+  }
+
+  findWindowById(windowId: number) {
     return Array.from(this.windows).find(
       (window) => !window.isDestroyed() && window.id === windowId
     )
   }
 
   getLastFocusedWindow() {
-    return this.lastFocusedWindowId ? this.getWindowById(this.lastFocusedWindowId) : null
+    return this.lastFocusedWindowId ? this.findWindowById(this.lastFocusedWindowId) : null
   }
 
   addWindow(window: Electron.BrowserWindow) {
@@ -81,13 +88,13 @@ export class ExtensionStore extends EventEmitter {
     return win
   }
 
-  async removeWindow(window: Electron.BrowserWindow) {
+  removeWindow(window: Electron.BrowserWindow) {
     if (!this.windows.has(window)) return
 
     this.windows.delete(window)
 
     if (typeof this.impl.removeWindow === 'function') {
-      await this.impl.removeWindow(window)
+      this.impl.removeWindow(window)
     } else {
       window.destroy()
     }
