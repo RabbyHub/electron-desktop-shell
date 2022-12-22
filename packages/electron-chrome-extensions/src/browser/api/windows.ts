@@ -3,7 +3,7 @@ import { parse } from 'node:url'
 import { BrowserWindow } from 'electron'
 import { ExtensionContext } from '../context'
 import { ExtensionEvent } from '../router'
-import { ensureSuffix } from '../utils'
+import { ensureSuffix, unPrefix } from '../utils'
 
 const debug = require('debug')('electron-chrome-extensions:windows')
 
@@ -165,9 +165,9 @@ export class WindowsAPI {
     const urlInfo = parse(url);
 
     if (!urlInfo.protocol && !urlInfo.hostname) {
-      url = path.posix.join(baseURL, url);
+      url = baseURL + unPrefix(url, ['./', '/']);
     } else if (!urlInfo.hostname) {
-      url = path.posix.join(baseURL, url);
+      url = baseURL + unPrefix(url, ['./', '/']);
     }
     
     const win = await this.ctx.store.createWindow(event, {...details, url})
