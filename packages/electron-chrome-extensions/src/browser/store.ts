@@ -154,6 +154,7 @@ export class ExtensionStore extends EventEmitter {
     }
 
     const result = await this.impl.createTab(details, { event })
+    if (!result) return result;
 
     if (!Array.isArray(result)) {
       throw new Error('createTab must return an array of [tab, window]')

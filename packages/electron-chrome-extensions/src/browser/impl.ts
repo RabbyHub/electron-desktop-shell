@@ -10,7 +10,7 @@ type ImplContext = {
 export interface ChromeExtensionImpl {
   createTab?(
     details: chrome.tabs.CreateProperties, ctx: ImplContext
-  ): PromiseOrIt<[Electron.WebContents, Electron.BrowserWindow]>
+  ): PromiseOrIt<[Electron.WebContents, Electron.BrowserWindow] | false>
   selectTab?(tab: Electron.WebContents, window: Electron.BrowserWindow): void
   removeTab?(tab: Electron.WebContents, window: Electron.BrowserWindow): void
 

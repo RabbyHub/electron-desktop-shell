@@ -32,6 +32,11 @@ export class WindowsAPI {
   }
 
   private observeWindow(window: Electron.BrowserWindow) {
+    if (!window || window.isDestroyed()) {
+      debug('observeWindow: window is destroyed');
+      return ;
+    }
+
     const windowId = window.id
 
     window.on('focus', () => {
