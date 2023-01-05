@@ -37,7 +37,8 @@ export const getExtensionUrl = (extension: Electron.Extension, uri: string) => {
 }
 
 export const resolveExtensionPath = (extension: Electron.Extension, uri: string) => {
-  const resPath = path.join(extension.path, uri)
+  const relpath = uri.indexOf(extension.url) === 0 ? uri.slice(extension.url.length) : uri;
+  const resPath = path.join(extension.path, relpath);
 
   // prevent any parent traversals
   if (!resPath.startsWith(extension.path)) return
