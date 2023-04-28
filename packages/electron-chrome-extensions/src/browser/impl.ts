@@ -1,6 +1,7 @@
 import type { ExtensionEvent } from "./router"
 
 type PromiseOrIt<T> = Promise<T> | T
+type ArrayOrIt<T> = T extends any[] ? T : T[]
 
 type ImplContext = {
   event: ExtensionEvent
@@ -19,6 +20,23 @@ export interface ChromeExtensionImpl {
    * background pages and content scripts.
    */
   assignTabDetails?(details: chrome.tabs.Tab, tab: Electron.WebContents): void
+
+  /**
+   * @description in most case, use this extension to manage a BrowserWindow used as a tabbed browser,
+   * this would effect some judgement inner the extension, like if we need to unref the window when all
+   * tabs related to it are closed --- in general, we said YES, but maybe sometimes you don't want to do
+   * like that, you can return false to tell us that.
+   * @param window 
+   */
+  getTabbedBrowserWindowBehavior?(ctx: {
+    window: Electron.BrowserWindow,
+    tabs: Set<Electron.WebContents>,
+  }): PromiseOrIt<{
+    /**
+     * @default true
+     */
+    keepRefWindowOnAllTabsClosed?: boolean
+  }>
   
   /**
    * @description get current window from where javascript is running

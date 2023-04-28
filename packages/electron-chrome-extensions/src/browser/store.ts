@@ -130,17 +130,21 @@ export class ExtensionStore extends EventEmitter {
 
     // TODO: clear active tab
 
-    // Clear window if it has no remaining tabs
-    const windowHasTabs = Array.from(this.tabs).find((tab) => this.tabToWindow.get(tab) === win)
-    if (!windowHasTabs) {
-      this.windows.delete(win)
-    }
-
-    if (typeof this.impl.removeTab === 'function') {
-      this.impl.removeTab(tab, win)
-    }
-
-    this.emit('tab-removed', tabId)
+    ;(async () => {
+      const behaviors = await this.impl.getTabbedBrowserWindowBehavior?.({ tabs: this.tabs, window: win })
+      // Clear window if it has no remaining tabs
+      const windowHasTabs = Array.from(this.tabs).find((tab) => this.tabToWindow.get(tab) === win)
+      if (!windowHasTabs && !behaviors?.keepRefWindowOnAllTabsClosed) {
+        // TODO: maybe we should check if windows destroyed to determine if we should dispose all listeners on it.
+        this.windows.delete(win);
+      }
+  
+      if (typeof this.impl.removeTab === 'function') {
+        this.impl.removeTab(tab, win)
+      }
+  
+      this.emit('tab-removed', tabId);
+    })();
   }
 
   async createTab(details: chrome.tabs.CreateProperties, event: ExtensionEvent) {
