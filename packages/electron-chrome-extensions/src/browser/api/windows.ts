@@ -39,51 +39,56 @@ export class WindowsAPI {
 
     const windowId = window.id
 
-    window.on('focus', () => {
+    const onFocus = () => {
       this.onFocusChanged(windowId)
-    })
+    };
 
-    window.once('closed', () => {
+    const onClosed = () => {
       this.ctx.store.windowDetailsCache.delete(windowId)
       this.ctx.store.removeWindow(window)
       this.onRemoved(windowId)
-    })
+    };
 
     const onRestoreOrMove = () => {
       const details = this.getWindowDetails(window)
       details.state = 'normal';
       this.ctx.store.windowDetailsCache.set(windowId, details)
     };
-    window.on('restore', onRestoreOrMove)
-    if (process.platform === 'win32') {
-      window.on('moved', onRestoreOrMove)
-    }
 
-    window.on('minimize', () => {
+    const onMinimize = () => {
       const details = this.getWindowDetails(window)
       details.state = 'minimized';
       this.ctx.store.windowDetailsCache.set(windowId, details)
-    })
+    };
 
-    window.on('maximize', () => {
+    const onMaximize = () => {
       const details = this.getWindowDetails(window)
       details.state = 'maximized';
       this.ctx.store.windowDetailsCache.set(windowId, details)
-    })
+    };
 
     const onEnterFullscreen = () => {
       const details = this.getWindowDetails(window)
       details.state = 'fullscreen';
       this.ctx.store.windowDetailsCache.set(windowId, details)
     };
-    window.on('enter-full-screen', onEnterFullscreen);
-    window.on('enter-html-full-screen', onEnterFullscreen);
 
     const onLeaveFullscreen = () => {
       const details = this.getWindowDetails(window)
       details.state = getWindowState(window);
       this.ctx.store.windowDetailsCache.set(windowId, details)
     };
+    
+    window.on('focus', onFocus);
+    window.once('closed', onClosed);
+    window.on('restore', onRestoreOrMove)
+    if (process.platform === 'win32') {
+      window.on('moved', onRestoreOrMove)
+    }
+    window.on('minimize', onMinimize);
+    window.on('maximize', onMaximize);
+    window.on('enter-full-screen', onEnterFullscreen);
+    window.on('enter-html-full-screen', onEnterFullscreen);
     window.on('leave-full-screen', onLeaveFullscreen);
     window.on('leave-html-full-screen', onLeaveFullscreen);
 
