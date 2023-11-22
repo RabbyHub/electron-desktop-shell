@@ -29,6 +29,16 @@ const getFrameDetails = (frame: any) => ({
   url: frame.url,
 })
 
+function getWebContentsFromEvent (
+  evt: Electron.IpcMainInvokeEvent | Electron.WebContentsWillNavigateEventParams | Electron.WebContentsWillRedirectEventParams
+) {
+  if (!(evt as Electron.IpcMainInvokeEvent).sender && ('frame' in evt)) {
+    return electron.webContents.fromFrame(evt.frame) || null;
+  }
+
+  return (evt as Electron.IpcMainInvokeEvent).sender;
+}
+
 export class WebNavigationAPI {
   constructor(private ctx: ExtensionContext) {
     const handle = this.ctx.router.apiHandler()
@@ -99,7 +109,7 @@ export class WebNavigationAPI {
   }
 
   private onCreatedNavigationTarget = (
-    event: Electron.IpcMainEvent,
+    event: Electron.IpcMainEvent | Electron.WebContentsWillNavigateEventParams,
     url: string,
     isInPlace: boolean,
     isMainFrame: boolean,
@@ -107,20 +117,22 @@ export class WebNavigationAPI {
     frameRoutingId: number
   ) => {
     const frame = getFrame(frameProcessId, frameRoutingId)
-    const tab = event.sender
+
+    const tab = getWebContentsFromEvent(event);
+    const tabId = tab?.id ?? -1;
     const details: chrome.webNavigation.WebNavigationSourceCallbackDetails = {
-      sourceTabId: tab.id,
+      sourceTabId: tabId,
       sourceProcessId: frameProcessId,
       sourceFrameId: getFrameId(frame),
       url,
-      tabId: tab.id,
+      tabId: tabId,
       timeStamp: Date.now(),
     }
     this.sendNavigationEvent('onCreatedNavigationTarget', details)
   }
 
   private onBeforeNavigate = (
-    event: Electron.IpcMainEvent,
+    event: Electron.IpcMainEvent | Electron.WebContentsWillNavigateEventParams,
     url: string,
     isInPlace: number,
     isMainFrame: boolean,
@@ -130,12 +142,14 @@ export class WebNavigationAPI {
     if (isInPlace) return
 
     const frame = getFrame(frameProcessId, frameRoutingId)
-    const tab = event.sender
+    const tab = getWebContentsFromEvent(event);
+    const tabId = tab?.id ?? -1;
+ 
     const details: chrome.webNavigation.WebNavigationParentedCallbackDetails = {
       frameId: getFrameId(frame),
       parentFrameId: getParentFrameId(frame),
       processId: frameProcessId,
-      tabId: tab.id,
+      tabId: tabId,
       timeStamp: Date.now(),
       url,
     }
@@ -154,11 +168,12 @@ export class WebNavigationAPI {
   ) => {
     const frame = getFrame(frameProcessId, frameRoutingId)
     const tab = event.sender
+    const tabId = tab?.id ?? -1;
     const details: chrome.webNavigation.WebNavigationParentedCallbackDetails = {
       frameId: getFrameId(frame),
       parentFrameId: getParentFrameId(frame),
       processId: frameProcessId,
-      tabId: tab.id,
+      tabId: tabId,
       timeStamp: Date.now(),
       url,
     }
@@ -174,6 +189,7 @@ export class WebNavigationAPI {
   ) => {
     const frame = getFrame(frameProcessId, frameRoutingId)
     const tab = event.sender
+    const tabId = tab?.id ?? -1;
     const details: chrome.webNavigation.WebNavigationTransitionCallbackDetails & {
       parentFrameId: number
     } = {
@@ -182,7 +198,7 @@ export class WebNavigationAPI {
       frameId: getFrameId(frame),
       parentFrameId: getParentFrameId(frame),
       processId: frameProcessId,
-      tabId: tab.id,
+      tabId: tabId,
       timeStamp: Date.now(),
       url,
     }
@@ -213,12 +229,13 @@ export class WebNavigationAPI {
   ) => {
     const frame = getFrame(frameProcessId, frameRoutingId)
     const tab = event.sender
-    const url = tab.getURL()
+    const tabId = tab?.id ?? -1;
+    const url = tab?.getURL();
     const details: chrome.webNavigation.WebNavigationParentedCallbackDetails = {
       frameId: getFrameId(frame),
       parentFrameId: getParentFrameId(frame),
       processId: frameProcessId,
-      tabId: tab.id,
+      tabId: tabId,
       timeStamp: Date.now(),
       url,
     }
